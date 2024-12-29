@@ -1,43 +1,42 @@
-
-from fastapi import FastAPI, Depends, APIRouter
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.database import get_db
 import uuid
-from app.models import User, Embeddings
+
 import numpy as np
-from datetime import datetime
+from fastapi import Depends, FastAPI
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.database import get_db
+from app.models import Embeddings, User
 from app.routers import user
-
 from app.utils import get_brazil_time
-
 
 app = FastAPI()
 
 app.include_router(user.router)
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
 
-@app.post("/create_user")
+@app.get('/')
+def read_root():
+    return {'Hello': 'World'}
+
+
+@app.post('/create_user')
 async def create_user(db: AsyncSession = Depends(get_db)):
-    unique_email = f"johndoe_{uuid.uuid4()}@example.com"
+    unique_email = f'johndoe_{uuid.uuid4()}@example.com'
     new_user = User(
         uuid=uuid.uuid4(),
-        name="John Doe",
-        nickname="johnd",
+        name='John Doe',
+        nickname='johnd',
         email=unique_email,
-        hashed_password="hashedpassword",
+        hashed_password='hashedpassword',
         created_at=get_brazil_time(),
         updated_at=get_brazil_time(),
         activated_at=get_brazil_time(),
         is_active=True,
-        roles={}
+        roles={},
     )
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
-
 
     # Gerar um embedding fictício com um vetor de tamanho 100
     embedding_vector = np.random.rand(100).tolist()
@@ -52,5 +51,6 @@ async def create_user(db: AsyncSession = Depends(get_db)):
 
     return f'Usuário criado com sucesso às {get_brazil_time()}'
 
-if __name__ == "__main__":
-    print("Running main")
+
+if __name__ == '__main__':
+    print('Running main')
