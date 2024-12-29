@@ -19,7 +19,7 @@ services:
       dockerfile: Dockerfile
     container_name: fastapi_app
     environment:
-      DATABASE_URL: postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      - DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}   
     ports:
       - "8009:8000"
     depends_on:

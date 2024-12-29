@@ -1,14 +1,19 @@
-from fastapi import FastAPI, Depends
+
+from fastapi import FastAPI, Depends, APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import get_db
+from app.database import get_db
 import uuid
-from models import User, Embeddings
+from app.models import User, Embeddings
 import numpy as np
 from datetime import datetime
+from app.routers import user
 
-from utils import get_brazil_time
+from app.utils import get_brazil_time
+
 
 app = FastAPI()
+
+app.include_router(user.router)
 
 @app.get("/")
 def read_root():
@@ -46,3 +51,6 @@ async def create_user(db: AsyncSession = Depends(get_db)):
     await db.refresh(new_embedding)
 
     return f'Usuário criado com sucesso às {get_brazil_time()}'
+
+if __name__ == "__main__":
+    print("Running main")

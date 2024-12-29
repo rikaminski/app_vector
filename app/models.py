@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from pgvector.sqlalchemy import Vector
 import uuid
 from datetime import datetime
-from utils import get_brazil_time
+from app.utils import get_brazil_time
 
 
 Base = declarative_base()
@@ -33,3 +33,5 @@ class Embeddings(Base):
     embedding: Mapped[Vector] = mapped_column(Vector, nullable=False)
     created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), default=get_brazil_time)
     user: Mapped["User"] = relationship("User", back_populates="embeddings")
+
+
