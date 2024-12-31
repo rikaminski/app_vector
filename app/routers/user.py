@@ -1,34 +1,31 @@
-import os
-import sys
-
-sys.path.insert(0, os.path.abspath(os.curdir))
-
-
+import logging
 import uuid
 from typing import Annotated
-
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import User
+import app.models as models
 from app.schemas import UserRegister
 from app.security import get_current_user
 from app.utils import get_brazil_time
 
 router = APIRouter(prefix='/user', tags=['user'])
 
-
-AsyncSessionDep = Annotated[AsyncSession, Depends(get_db)]
-CurrentUserDep = Annotated[User, Depends(get_current_user)]
+#CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
 @router.post('/register')
-async def create_user(user_data: UserRegister, db: AsyncSessionDep):
+def create_user(user_data: UserRegister, db: Session = Depends(get_db)):
+
+    existing_user = models.User.find_by_email(db=db,email= user_data.email)
     if user_data.password != user_data.confirm_password:
         raise HTTPException(status_code=400, detail='Passwords do not match')
-
-    new_user = User(
+    
+    if existing_user:
+        logging.info(f"Email {user_data.email} is already registered")
+        raise HTTPException(status_code=400, detail='Email already registered')
+    
+    new_user = models.User(
         uuid=uuid.uuid4(),
         name=user_data.name,
         nickname=user_data.nickname,
@@ -36,12 +33,12 @@ async def create_user(user_data: UserRegister, db: AsyncSessionDep):
         hashed_password=user_data.password,  # Hash password before
         created_at=get_brazil_time(),
         updated_at=get_brazil_time(),
-        activated_at=get_brazil_time(),
+        activated_at=None,
         is_active=True,
         roles={},
     )
     db.add(new_user)
-    await db.commit()
-    await db.refresh(new_user)
+    db.commit()
+    db.refresh(new_user)
 
     return new_user
