@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
+from datetime import datetime
 
 
 class UserRegister(BaseModel):
@@ -7,3 +8,10 @@ class UserRegister(BaseModel):
     email: EmailStr = Field(..., example='johndoe@example.com')
     password: str = Field(..., example='password123')
     confirm_password: str = Field(..., example='password123')
+
+class TokenVerify(BaseModel):
+    token: str
+    expire: datetime
+    email: EmailStr
+    token_type: str
+    is_active: bool
